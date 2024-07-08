@@ -7,6 +7,7 @@ import os
 import time
 from bs4 import BeautifulSoup
 import datetime
+from datetime import timedelta
 import matplotlib.dates as mdates
 
 def Web_scrap():
@@ -54,24 +55,53 @@ def Mean_imputation(data):
     print("Mean imputation done.")
     print("Nah value smoothed")
 
-
-def Load_Data(FlieLocation,ExtractLabel,MeanImputation=True):
+def Load_All_Data(FlieLocation,drop_nan=True,MeanImputation=False):
     data = pd.read_csv(FlieLocation)
     Time_label = data.columns[0]
-    T_data = data[Time_label].values
-    
     check_nan_indices(data,Time_label)
+    
     if MeanImputation:        
         Mean_imputation(data)
+    if drop_nan:
+        data = data.dropna(axis=1)
     
+    return data
+
+def Load_Data(FlieLocation,ExtractLabel):
+    data = Load_All_Data(FlieLocation)
+    Time_label = data.columns[0]
+    T_data = data[Time_label].values
     TimeSerise = data[ExtractLabel].values
     
     print("returning time serise of ", ExtractLabel)
     
     return [TimeSerise,T_data]
-        
-    
 
+def Load_mutiple_data(FlieLocation,ExtractLabels):
+    data = Load_All_Data(FlieLocation)
+    Time_label = data.columns[0]
+    T_data = data[Time_label].values
+    TimeSerises = []
+    for label in ExtractLabels:
+        TimeSerise = data[label].values
+        TimeSerises.append([TimeSerise])
+    return TimeSerises, T_data
+    
+def Load_time_and_date(FlieLocation):
+    data = Load_All_Data(FlieLocation)
+    Time_label = data.columns[0]
+    T_data = data[Time_label].values
+    return T_data
+
+def Find_day_index(Full_time_day, target_day):
+    index = np.where(Full_time_day == target_day.strftime('%Y-%m-%d'))[0]
+    while len(index) == 0:
+        print("The day", target_day ,"is not in the data set, finding the closest day...")
+        target_day = target_day - datetime.timedelta(days=1)
+        index = np.where(Full_time_day == target_day.strftime('%Y-%m-%d'))[0]
+    index = int(index[0])
+    #print("Choosing day: ",Full_time_day[index])
+    return index
 #Basic analysis
 def Basic_plot(Data):
     print("It might take some time...")
@@ -80,7 +110,7 @@ def Basic_plot(Data):
     for column in Data.columns[1:]:
         # Create a new plot for each column
         plt.figure()
-        plt.plot(data[x_axis_label], data[column])
+        plt.plot(Data[x_axis_label], Data[column])
         plt.xlabel(x_axis_label)
         plt.ylabel(column)
         plt.title(f'Plot of {column}')

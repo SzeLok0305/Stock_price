@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['Load_data.py', 'time_series_analysis.py', 'time_series_analysis_tensorflow.py']
+recent_files = ['Load_data.py', 'MC_Sim.py', 'Generate_plot.py', 'NN_training.py', 'Trading.py', 'Math_tools.py']
 
 [main]
 version = 0.2.0
